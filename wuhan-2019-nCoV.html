@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>武汉市疫情趋势</title>
+    <style type="text/css">
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script>
+        var myChart = null;
+        var date_n = ["2020.1.24", "2020.1.25", "2020.1.26", "2020.1.27", "2020.1.28", "2020.1.29", "2020.1.30", "2020.1.31", "2020.2.1", "2020.2.2", "2020.2.3", "2020.2.4", "2020.2.5", "2020.2.6", "2020.2.7", "2020.2.8", "2020.2.9", "2020.2.10", "2020.2.11", "2020.2.12", "2020.2.13", "2020.2.14", "2020.2.15", "2020.2.16", "2020.2.17", "2020.2.18", "2020.2.19", "2020.2.20", "2020.2.21", "2020.2.22", "2020.2.23", "2020.2.24", "2020.2.25", "2020.2.26", "2020.2.27", "2020.2.28", "2020.2.29", "2020.3.1", "2020.3.2", "2020.3.3", "2020.3.4", "2020.3.5", "2020.3.6", "2020.3.7", "2020.3.8", "2020.3.9", "2020.3.10", "2020.3.11", "2020.3.12", "2020.3.13", "2020.3.14", "2020.3.15", "2020.3.16", "2020.3.17", "2020.3.18", "2020.3.19", "2020.3.20", "2020.3.21", "2020.3.22", "2020.3.23", "2020.3.24", "2020.3.25", "2020.3.26", "2020.3.27", "2020.3.28", "2020.3.29", "2020.3.30", "2020.3.31", "2020.4.1", "2020.4.2", "2020.4.3", "2020.4.4", "2020.4.5", "2020.4.6", "2020.4.7", "2020.4.8"
+        ];
+        var confirmed_n = ["495", "572", "618", "698", "1590", "1905", "2261", "2639", "3215", "4109", "5142", "6384", "8351",
+            "10117", "11618", "13603", "14982", "16902", "18454", "19558", "32994", "35991", "37914", "39462", "41152", "42752",
+            "44412", "45027", "45346", "45660", "46201", "46607", "47071", "47441", "47824", "48137", "48557", "49122", "49315",
+            "49426", "49540", "49671", "49797", "49871", "49912", "49948", "49965", "49978", "49986", "49991", "49995", "49999",
+            "50003", "50004", "50005", "50005", "50005", "50005", "50005", "50005", "50006", "50006", "50006", "50006", "50006",
+            "50006", "50006", "50006", "50006", "50006", "50006", "50007", "50007", "50007", "50007", "50007"
+        ];
+        var cured_n = ["31", "32", "40", "42", "42", "42", "46", "67", "103", "135", "188", "267", "332", "395", "498", "662",
+            "841", "1044", "1243", "1377", "1922", "2016", "2602", "2937", "3458", "4253", "4990", "5573", "6280", "7278", "8186",
+            "8950", "10364", "11816", "13474", "15853", "17656", "19534", "21349", "23063", "24892", "26404", "27420", "28563",
+            "29908", "30985", "31974", "33117", "34094", "35197", "36465", "37643", "38424", "39220", "40032", "40765", "41440",
+            "41891", "42354", "42788", "43214", "43686", "44068", "44591", "44951", "45418", "45733", "46002", "46175", "46320",
+            "46461", "46611", "46794", "46863", "46922", "46992"
+        ];
+        var dead_n = ["24", "38", "45", "63", "85", "104", "129", "159", "192", "224", "265", "313", "362", "414", "478", "545",
+            "608", "681", "748", "820", "1036", "1016", "1123", "1233", "1309", "1381", "1497", "1585", "1684", "1774", "1856",
+            "1987", "2043", "2085", "2104", "2132", "2169", "2195", "2227", "2252", "2282", "2305", "2328", "2349", "2370",
+            "2389", "2404", "2423", "2430", "2436", "2446", "2456", "2469", "2480", "2490", "2496", "2498", "2504", "2508",
+            "2517", "2524", "2526", "2531", "2535", "2538", "2543", "2547", "2548", "2553", "2559", "2563", "2567", "2570",
+            "2571", "2571", "2572"
+        ];
+        var existed_n = [];
+
+        var colors = ["#333", "#333", "#c23531", "#91c7ae", "#2f4554", "#00B050", "#888888", "#FFB343"];
+        var lineSymbolSize = 10;
+        var lineWidth = 5;
+        var labelFontSize = 16;
+        function initChart() {
+            var cured_r = [];
+            var dead_r = [];
+            var existed_r = [];
+
+            for (var i = 0; i < date_n.length; i++) {
+                cured_r.push((cured_n[i] / confirmed_n[i] * 100).toFixed(2));
+                dead_r.push((dead_n[i] / confirmed_n[i] * 100).toFixed(2));
+                var e_n = confirmed_n[i] - cured_n[i] - dead_n[i];
+                existed_n.push(e_n);
+                existed_r.push((e_n / confirmed_n[i] * 100).toFixed(2));
+            }
+            // 基于准备好的dom，初始化echarts实例
+            myChart = echarts.init(document.getElementById('main'));
+
+            // 指定图表的配置项和数据
+            option = {
+                tooltip: {
+                    trigger: 'axis',
+                },
+                legend: {
+                    data: ['累计确诊', '累计治愈', '累计死亡', '治愈率', '现存确诊比例', '死亡率'],
+                    textStyle: {
+                        fontSize: labelFontSize
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    axisLabel: {
+                        fontSize: labelFontSize,
+                    },
+                    data: date_n
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '人数',
+                        min: 0,
+                        max: 50000,
+                        position: 'left',
+                        axisLine: {
+                            lineStyle: {
+                                color: colors[0]
+                            }
+                        },
+                        axisLabel: {
+                            formatter: '{value} 人',
+                            fontSize: labelFontSize,
+                        },
+                        nameTextStyle: {
+                            fontSize: labelFontSize,
+                        }
+                    },
+                    {
+                        type: 'value',
+                        name: '百分比',
+                        min: 0,
+                        max: 100,
+                        position: 'right',
+                        axisLine: {
+                            lineStyle: {
+                                color: colors[1]
+                            }
+                        },
+                        axisLabel: {
+                            formatter: '{value} %',
+                            fontSize: labelFontSize,
+                        },
+                        nameTextStyle: {
+                            fontSize: labelFontSize,
+                        }
+                    },
+                ],
+                series: [
+                    {
+                        name: '累计确诊',
+                        type: 'line',
+                        yAxisIndex: 0,
+                        symbolSize: lineSymbolSize,
+                        itemStyle: {
+                            color: colors[2],
+                        },
+                        lineStyle: {
+                            color: colors[2],
+                            width: lineWidth,
+                        },
+                        data: confirmed_n
+                    },
+                    {
+                        name: '累计治愈',
+                        type: 'line',
+                        yAxisIndex: 0,
+                        symbolSize: lineSymbolSize,
+                        itemStyle: {
+                            color: colors[5],
+                        },
+                        lineStyle: {
+                            color: colors[5],
+                            width: lineWidth,
+                        },
+                        data: cured_n
+                    },
+                    {
+                        name: '累计死亡',
+                        type: 'line',
+                        yAxisIndex: 0,
+                        symbolSize: lineSymbolSize,
+                        itemStyle: {
+                            color: colors[4],
+                        },
+                        lineStyle: {
+                            color: colors[4],
+                            width: lineWidth,
+                        },
+                        data: dead_n
+                    },
+                    {
+                        name: '死亡率',
+                        type: 'bar',
+                        stack: '百分比',
+                        yAxisIndex: 1,
+                        itemStyle: {
+                            color: colors[6],
+                        },
+                        data: dead_r
+                    },
+                    {
+                        name: '现存确诊比例',
+                        type: 'bar',
+                        stack: '百分比',
+                        yAxisIndex: 1,
+                        itemStyle: {
+                            color: colors[7],
+                        },
+                        data: existed_r
+                    },
+                    {
+                        name: '治愈率',
+                        type: 'bar',
+                        stack: '百分比',
+                        yAxisIndex: 1,
+                        itemStyle: {
+                            color: colors[3],
+                        },
+                        data: cured_r
+                    },
+
+                ]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+
+        window.onload = function () {
+            var c_w = document.body.clientWidth;
+            if (c_w <= 750) {
+                document.getElementById('main').setAttribute("style", "width: 100%;height:85%;position: fixed;left: 0%;top:15%")
+            }
+            initChart();
+        }
+
+        window.onresize = function () {
+            myChart.resize();
+        }
+
+    </script>
+</head>
+
+<body>
+    <div id="main" class="chart" style="width: 80%;height:85%;position: fixed;left: 20%;top:15%"></div>
+</body>
+
+</html>
